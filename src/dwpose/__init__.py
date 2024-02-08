@@ -65,6 +65,7 @@ class DWposeDetector:
         detect_resolution=512,
         image_resolution=512,
         output_type="pil",
+        is_resize=True,
         **kwargs,
     ):
         input_image = cv2.cvtColor(
@@ -72,7 +73,8 @@ class DWposeDetector:
         )
 
         input_image = HWC3(input_image)
-        input_image = resize_image(input_image, detect_resolution)
+        if is_resize:
+            input_image = resize_image(input_image, detect_resolution)
         H, W, C = input_image.shape
         with torch.no_grad():
             candidate, subset = self.pose_estimation(input_image)
@@ -110,7 +112,10 @@ class DWposeDetector:
             detected_map = draw_pose(pose, H, W)
             detected_map = HWC3(detected_map)
 
-            img = resize_image(input_image, image_resolution)
+            if is_resize:
+                img = resize_image(input_image, image_resolution)
+            else:
+                img = input_image
             H, W, C = img.shape
 
             detected_map = cv2.resize(

@@ -59,7 +59,7 @@ def process_dwpose(dwprocessor, video_path, output_dwpose_video_path):
     dwpose_results=[]
     for idx in tqdm(range(len(vr)), desc=f"Processing {os.path.basename(video_path)}"):
         frame = vr[idx]
-        detected_pose, _ = dwprocessor(frame)
+        detected_pose, _ = dwprocessor(frame, is_resize=False)
         dwpose_results.append(detected_pose)
 
     save_videos_from_pil(dwpose_results, output_dwpose_video_path, fps=fps)    

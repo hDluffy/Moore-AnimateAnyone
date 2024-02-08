@@ -1,6 +1,6 @@
 data:
   train_bs: 4
-  train_width: 768 
+  train_width: 512 
   train_height: 768 
   meta_paths:
     - "./data/fashion_meta.json"
@@ -39,10 +39,18 @@ noise_scheduler_kwargs:
   steps_offset:        1
   clip_sample:         false
 
-base_model_path: './pretrained_weights/sd-image-variations-diffusers'
-vae_model_path: './pretrained_weights/sd-vae-ft-mse'
-image_encoder_path: './pretrained_weights/sd-image-variations-diffusers/image_encoder'
+#base_model_path: './pretrained_weights/sd-image-variations-diffusers'
+#vae_model_path: './pretrained_weights/sd-vae-ft-mse'
+#image_encoder_path: './pretrained_weights/sd-image-variations-diffusers/image_encoder'
+base_model_path: '/home/date1/hjq/repository/BaseModels/stable-diffusion-v1-5'
+vae_model_path: '/home/date1/hjq/repository/magic-animate/pretrained_models/sd-vae-ft-mse'
+image_encoder_path: './pretrained_weights/image_encoder'
 controlnet_openpose_path: './pretrained_weights/control_v11p_sd15_openpose/diffusion_pytorch_model.bin'
+
+pretrained_weights: './pretrained_weights'
+pretrained_referencenet_path: './pretrained_weights/reference_unet.pth'
+pretrained_poseguider_path: './pretrained_weights/pose_guider.pth'
+pretrained_deunet_path: './pretrained_weights/denoising_unet.pth'
 
 weight_dtype: 'fp16'  # [fp16, fp32]
 uncond_ratio: 0.1

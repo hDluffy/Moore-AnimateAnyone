@@ -298,6 +298,23 @@ def main(cfg):
             conditioning_embedding_channels=320,
         ).to(device="cuda")
 
+    if cfg.pretrained_weights:
+        denoising_unet_state_dict = torch.load(os.path.join(cfg.pretrained_weights, "denoising_unet.pth"), map_location="cpu")
+        # unet_state_dict = unet_state_dict["unet_state_dict"] if "unet_state_dict" in unet_state_dict else unet_state_dict
+        m, u = denoising_unet.load_state_dict(denoising_unet_state_dict, strict=False)
+        #print(f"missing keys: {len(m)}, unexpected keys: {len(u)}")
+        #print(f"### missing keys:\n{m}\n### unexpected keys:\n{u}\n")
+        assert len(u) == 0
+
+        reference_unet_state_dict = torch.load(os.path.join(cfg.pretrained_weights, "reference_unet.pth"), map_location="cpu")
+        m, u = reference_unet.load_state_dict(reference_unet_state_dict, strict=False)
+        assert len(u) == 0
+
+        pose_guider_state_dict = torch.load(os.path.join(cfg.pretrained_weights, "pose_guider.pth"), map_location="cpu")
+        m, u = pose_guider.load_state_dict(pose_guider_state_dict, strict=False)
+        assert len(u) == 0
+
+
     # Freeze
     vae.requires_grad_(False)
     image_enc.requires_grad_(False)
@@ -613,11 +630,11 @@ def main(cfg):
                 global_step += 1
                 accelerator.log({"train_loss": train_loss}, step=global_step)
                 train_loss = 0.0
-                if global_step % cfg.checkpointing_steps == 0:
-                    if accelerator.is_main_process:
-                        save_path = os.path.join(save_dir, f"checkpoint-{global_step}")
-                        delete_additional_ckpt(save_dir, 1)
-                        accelerator.save_state(save_path)
+                # if global_step % cfg.checkpointing_steps == 0:
+                #     if accelerator.is_main_process:
+                #         save_path = os.path.join(save_dir, f"checkpoint-{global_step}")
+                #         delete_additional_ckpt(save_dir, 1)
+                #         accelerator.save_state(save_path)
 
                 if global_step % cfg.val.validation_steps == 0:
                     if accelerator.is_main_process:
@@ -713,7 +730,7 @@ def save_checkpoint(model, save_dir, prefix, ckpt_num, total_limit=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="./configs/training/stage1.yaml")
+    parser.add_argument("--config", type=str, default="./configs/train/stage1.yaml")
     args = parser.parse_args()
 
     if args.config[-5:] == ".yaml":

@@ -106,7 +106,7 @@ class Pose2ImagePipeline(DiffusionPipeline):
         # video = self.vae.decode(latents).sample
         video = []
         for frame_idx in tqdm(range(latents.shape[0])):
-            video.append(self.vae.decode(latents[frame_idx : frame_idx + 1]).sample)
+            video.append(self.vae.decode(latents[frame_idx : frame_idx + 1].to(dtype=self.vae.dtype)).sample)
         video = torch.cat(video)
         video = rearrange(video, "(b f) c h w -> b c f h w", f=video_length)
         video = (video / 2 + 0.5).clamp(0, 1)
@@ -299,14 +299,14 @@ class Pose2ImagePipeline(DiffusionPipeline):
                     self.reference_unet(
                         ref_image_latents.repeat(
                             (2 if do_classifier_free_guidance else 1), 1, 1, 1
-                        ),
+                        ).to(dtype=self.reference_unet.dtype),
                         torch.zeros_like(t),
-                        encoder_hidden_states=image_prompt_embeds,
+                        encoder_hidden_states=image_prompt_embeds.to(dtype=self.reference_unet.dtype),
                         return_dict=False,
                     )
 
                     # 2. Update reference unet feature into denosing net
-                    reference_control_reader.update(reference_control_writer)
+                    reference_control_reader.update(reference_control_writer, dtype=self.denoising_unet.dtype)
 
                 # 3.1 expand the latents if we are doing classifier free guidance
                 latent_model_input = (
@@ -317,10 +317,10 @@ class Pose2ImagePipeline(DiffusionPipeline):
                 )
 
                 noise_pred = self.denoising_unet(
-                    latent_model_input,
+                    latent_model_input.to(dtype=self.denoising_unet.dtype),
                     t,
-                    encoder_hidden_states=image_prompt_embeds,
-                    pose_cond_fea=pose_fea,
+                    encoder_hidden_states=image_prompt_embeds.to(dtype=self.denoising_unet.dtype),
+                    pose_cond_fea=pose_fea.to(dtype=self.denoising_unet.dtype),
                     return_dict=False,
                 )[0]
 
@@ -347,6 +347,20 @@ class Pose2ImagePipeline(DiffusionPipeline):
             reference_control_reader.clear()
             reference_control_writer.clear()
 
+        reference_control_writer = ReferenceAttentionControl(
+            self.reference_unet,
+            do_classifier_free_guidance=False,
+            mode="write",
+            batch_size=batch_size,
+            fusion_blocks="full",
+        )
+        reference_control_reader = ReferenceAttentionControl(
+            self.denoising_unet,
+            do_classifier_free_guidance=False,
+            mode="read",
+            batch_size=batch_size,
+            fusion_blocks="full",
+        )
         # Post-processing
         image = self.decode_latents(latents)  # (b, c, 1, h, w)
 

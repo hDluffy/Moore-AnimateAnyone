@@ -316,7 +316,7 @@ class Pose2VideoPipeline(DiffusionPipeline):
 
         # Prepare clip image embeds
         clip_image = self.clip_image_processor.preprocess(
-            ref_image, return_tensors="pt"
+            ref_image.resize((224, 224)), return_tensors="pt"
         ).pixel_values
         clip_image_embeds = self.image_encoder(
             clip_image.to(device, dtype=self.image_encoder.dtype)

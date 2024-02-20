@@ -41,12 +41,13 @@ class HumanDanceVideoDataset(Dataset):
 
         self.pixel_transform = transforms.Compose(
             [
-                transforms.RandomResizedCrop(
-                    (height, width),
-                    scale=self.img_scale,
-                    ratio=self.img_ratio,
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
+                # transforms.RandomResizedCrop(
+                #     (height, width),
+                #     scale=self.img_scale,
+                #     ratio=self.img_ratio,
+                #     interpolation=transforms.InterpolationMode.BILINEAR,
+                # ),
+                transforms.Resize((height, width)),
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]
@@ -54,12 +55,13 @@ class HumanDanceVideoDataset(Dataset):
 
         self.cond_transform = transforms.Compose(
             [
-                transforms.RandomResizedCrop(
-                    (height, width),
-                    scale=self.img_scale,
-                    ratio=self.img_ratio,
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
+                # transforms.RandomResizedCrop(
+                #     (height, width),
+                #     scale=self.img_scale,
+                #     ratio=self.img_ratio,
+                #     interpolation=transforms.InterpolationMode.BILINEAR,
+                # ),
+                transforms.Resize((height, width)),
                 transforms.ToTensor(),
             ]
         )
@@ -120,7 +122,7 @@ class HumanDanceVideoDataset(Dataset):
         )
         pixel_values_ref_img = self.augmentation(ref_img, self.pixel_transform, state)
         clip_ref_img = self.clip_image_processor(
-            images=ref_img, return_tensors="pt"
+            images=ref_img.resize((224, 224)), return_tensors="pt"
         ).pixel_values[0]
 
         sample = dict(

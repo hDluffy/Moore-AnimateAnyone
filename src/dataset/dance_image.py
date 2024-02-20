@@ -40,12 +40,13 @@ class HumanDanceDataset(Dataset):
 
         self.transform = transforms.Compose(
             [
-                transforms.RandomResizedCrop(
-                    self.img_size,
-                    scale=self.img_scale,
-                    ratio=self.img_ratio,
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
+                # transforms.RandomResizedCrop(
+                #     self.img_size,
+                #     scale=self.img_scale,
+                #     ratio=self.img_ratio,
+                #     interpolation=transforms.InterpolationMode.BILINEAR,
+                # ),
+                transforms.Resize([img_size[1],img_size[0]]),
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]
@@ -53,12 +54,13 @@ class HumanDanceDataset(Dataset):
 
         self.cond_transform = transforms.Compose(
             [
-                transforms.RandomResizedCrop(
-                    self.img_size,
-                    scale=self.img_scale,
-                    ratio=self.img_ratio,
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
+                # transforms.RandomResizedCrop(
+                #     self.img_size,
+                #     scale=self.img_scale,
+                #     ratio=self.img_ratio,
+                #     interpolation=transforms.InterpolationMode.BILINEAR,
+                # ),
+                transforms.Resize([img_size[1],img_size[0]]),
                 transforms.ToTensor(),
             ]
         )
@@ -107,7 +109,7 @@ class HumanDanceDataset(Dataset):
         tgt_pose_img = self.augmentation(tgt_pose_pil, self.cond_transform, state)
         ref_img_vae = self.augmentation(ref_img_pil, self.transform, state)
         clip_image = self.clip_image_processor(
-            images=ref_img_pil, return_tensors="pt"
+            images=ref_img_pil.resize((224, 224)), return_tensors="pt"
         ).pixel_values[0]
 
         sample = dict(

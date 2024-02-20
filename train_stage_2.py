@@ -694,9 +694,9 @@ def main(cfg):
                 break
         # save model after each epoch
         if accelerator.is_main_process:
-            save_path = os.path.join(save_dir, f"checkpoint-{global_step}")
-            delete_additional_ckpt(save_dir, 1)
-            accelerator.save_state(save_path)
+            # save_path = os.path.join(save_dir, f"checkpoint-{global_step}")
+            # delete_additional_ckpt(save_dir, 1)
+            # accelerator.save_state(save_path)
             # save motion module only
             unwrap_net = accelerator.unwrap_model(net)
             save_checkpoint(
@@ -761,7 +761,7 @@ def decode_latents(vae, latents):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="./configs/training/stage2.yaml")
+    parser.add_argument("--config", type=str, default="./configs/train/stage2.yaml")
     args = parser.parse_args()
 
     if args.config[-5:] == ".yaml":

@@ -102,7 +102,11 @@ if __name__ == "__main__":
         for video_name in tqdm(os.listdir(src_path), desc=f"Processing"):
             video_path = os.path.join(src_path, video_name)
             output_dwpose_video_path = os.path.join(output_dwpose_path, video_name)
-            process_dwpose(dwprocessor, video_path, output_dwpose_video_path)
+            if not os.path.exists(output_dwpose_video_path):
+                print("process dwpose")
+                process_dwpose(dwprocessor, video_path, output_dwpose_video_path)
+            else :
+                print(f"{output_dwpose_video_path},is exist!")
 
             meta_list.append({"video_path":video_path, "kps_path":output_dwpose_video_path})
 

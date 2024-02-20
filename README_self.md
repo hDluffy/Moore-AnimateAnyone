@@ -24,3 +24,8 @@ deepspeed_config:
 ```bash
 accelerate launch --config_file /path/default_config.yaml train_stage_1.py
 ```
+
+- training stage2
+```bash
+accelerate launch --config_file /path/default_config.yaml train_stage_2.py
+```

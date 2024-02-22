@@ -29,3 +29,9 @@ accelerate launch --config_file /path/default_config.yaml train_stage_1.py
 ```bash
 accelerate launch --config_file /path/default_config.yaml train_stage_2.py
 ```
+
+- test stage2
+调整./configs/prompts/animation_ts.yaml中的模型路径，执行下面指令
+```bash
+python -m scripts.pose2vid --config ./configs/prompts/animation_ts.yaml -W 512 -H 784 -L 141
+```

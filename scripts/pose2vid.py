@@ -10,7 +10,7 @@ import torch
 import torchvision
 from diffusers import AutoencoderKL, DDIMScheduler
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
-from einops import repeat
+from einops import repeat,rearrange
 from omegaconf import OmegaConf
 from PIL import Image
 from torchvision import transforms
@@ -22,7 +22,7 @@ from src.models.unet_2d_condition import UNet2DConditionModel
 from src.models.unet_3d import UNet3DConditionModel
 from src.pipelines.pipeline_pose2vid_long import Pose2VideoPipeline
 from src.utils.util import get_fps, read_frames, save_videos_grid
-
+import imageio
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -38,6 +38,19 @@ def parse_args():
 
     return args
 
+def save_videos_grid_imageio(videos: torch.Tensor, path: str, rescale=False, n_rows=6, fps=25):
+    videos = rearrange(videos, "b c t h w -> t b c h w")
+    outputs = []
+    for x in videos:
+        x = torchvision.utils.make_grid(x, nrow=n_rows)
+        x = x.transpose(0, 1).transpose(1, 2).squeeze(-1)
+        if rescale:
+            x = (x + 1.0) / 2.0  # -1,1 -> 0,1
+        x = (x * 255).numpy().astype(np.uint8)
+        outputs.append(x)
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    imageio.mimsave(path, outputs, fps=float(fps))
 
 def main():
     args = parse_args()
@@ -155,7 +168,8 @@ def main():
             ).videos
 
             video = torch.cat([ref_image_tensor, pose_tensor, video], dim=0)
-            save_videos_grid(
+            #save_videos_grid(
+            save_videos_grid_imageio(
                 video,
                 f"{save_dir}/{ref_name}_{pose_name}_{args.H}x{args.W}_{int(args.cfg)}_{time_str}.mp4",
                 n_rows=3,

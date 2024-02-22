@@ -167,13 +167,37 @@ def log_validation(
     pipe = pipe.to(accelerator.device)
 
     test_cases = [
+        # (
+        #     "./configs/inference/ref_images/anyone-3.png",
+        #     "./configs/inference/pose_videos/anyone-video-1_kps.mp4",
+        # ),
+        # (
+        #     "./configs/inference/ref_images/anyone-2.png",
+        #     "./configs/inference/pose_videos/anyone-video-2_kps.mp4",
+        # ),
         (
-            "./configs/inference/ref_images/anyone-3.png",
-            "./configs/inference/pose_videos/anyone-video-1_kps.mp4",
+            "./configs/inference/km3/image1.jpg",
+            "./configs/inference/km3/image1.mp4",
         ),
         (
-            "./configs/inference/ref_images/anyone-2.png",
-            "./configs/inference/pose_videos/anyone-video-2_kps.mp4",
+            "./configs/inference/km3/image2.jpg",
+            "./configs/inference/km3/image2.mp4",
+        ),
+        (
+            "./configs/inference/km3/image3.jpg",
+            "./configs/inference/km3/image3.mp4",
+        ),
+        (
+            "./configs/inference/km3/image4.jpg",
+            "./configs/inference/km3/image4.mp4",
+        ),
+        (
+            "./configs/inference/km3/image5.jpg",
+            "./configs/inference/km3/image5.mp4",
+        ),
+        (
+            "./configs/inference/km3/image6.jpg",
+            "./configs/inference/km3/image6.mp4",
         ),
     ]
 

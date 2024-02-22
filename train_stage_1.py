@@ -159,12 +159,15 @@ def log_validation(
     pipe = pipe.to(accelerator.device)
 
     ref_image_paths = [
-        "./configs/inference/ref_images/anyone-2.png",
-        "./configs/inference/ref_images/anyone-3.png",
+        #"./configs/inference/ref_images/anyone-2.png",
+        #"./configs/inference/ref_images/anyone-3.png",
+        "./configs/inference/km3/image6.jpg",
     ]
     pose_image_paths = [
-        "./configs/inference/pose_images/pose-1.png",
-        "./configs/inference/pose_images/pose-1.png",
+        #"./configs/inference/pose_images/pose-1.png",
+        #"./configs/inference/pose_images/pose-1.png",
+        "./configs/inference/pose_images/img6-08.jpg",
+        "./configs/inference/pose_images/img6-18.jpg",
     ]
 
     pil_images = []

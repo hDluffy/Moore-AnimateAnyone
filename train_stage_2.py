@@ -176,27 +176,27 @@ def log_validation(
         #     "./configs/inference/pose_videos/anyone-video-2_kps.mp4",
         # ),
         (
-            "./configs/inference/km3/image1.jpg",
+            "./configs/inference/ref_images/self/image1.jpg",
             "./configs/inference/km3/image1.mp4",
         ),
         (
-            "./configs/inference/km3/image2.jpg",
+            "./configs/inference/ref_images/self/image2.jpg",
             "./configs/inference/km3/image2.mp4",
         ),
         (
-            "./configs/inference/km3/image3.jpg",
+            "./configs/inference/ref_images/self/image3.jpg",
             "./configs/inference/km3/image3.mp4",
         ),
         (
-            "./configs/inference/km3/image4.jpg",
+            "./configs/inference/ref_images/self/image4.jpg",
             "./configs/inference/km3/image4.mp4",
         ),
         (
-            "./configs/inference/km3/image5.jpg",
+            "./configs/inference/ref_images/self/image5.jpg",
             "./configs/inference/km3/image5.mp4",
         ),
         (
-            "./configs/inference/km3/image6.jpg",
+            "./configs/inference/ref_images/self/image6.jpg",
             "./configs/inference/km3/image6.mp4",
         ),
     ]

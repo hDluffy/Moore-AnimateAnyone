@@ -17,7 +17,7 @@ class Wholebody:
             ["CPUExecutionProvider"] if device == "cpu" else ["CUDAExecutionProvider"]
         )
         onnx_det = ModelDataPathPrefix.joinpath("DWPose/yolox_l.onnx")
-        onnx_pose = ModelDataPathPrefix.joinpath("DWPose/dw-ll_ucoco_384.onnx")
+        onnx_pose = ModelDataPathPrefix.joinpath("DWPose/rtmw-dw-x-l-384.onnx")
 
         self.session_det = ort.InferenceSession(
             path_or_bytes=onnx_det, providers=providers
@@ -29,6 +29,8 @@ class Wholebody:
     def __call__(self, oriImg):
         det_result = inference_detector(self.session_det, oriImg)
         keypoints, scores = inference_pose(self.session_pose, det_result, oriImg)
+        ##用于rtmw-dw-x-l-384.onnx模型，归一化
+        scores = scores / np.max(scores)
 
         keypoints_info = np.concatenate((keypoints, scores[..., None]), axis=-1)
         # compute neck joint

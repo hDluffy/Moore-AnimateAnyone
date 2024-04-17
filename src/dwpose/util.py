@@ -156,6 +156,99 @@ def draw_bodypose(canvas, candidate, subset):
 
     return canvas
 
+def draw_bodypose_with_foot(canvas, candidate, subset):
+    H, W, C = canvas.shape
+    candidate = np.array(candidate)
+    subset = np.array(subset)
+
+    stickwidth = 4
+
+    limbSeq = [
+        [2, 3],
+        [2, 6],
+        [3, 4],
+        [4, 5],
+        [6, 7],
+        [7, 8],
+        [2, 9],
+        [9, 10],
+        [10, 11],
+        [2, 12],
+        [12, 13],
+        [13, 14],
+        [2, 1],
+        [1, 15],
+        [15, 17],
+        [1, 16],
+        [16, 18],
+        # [3, 17],
+        # [6, 18],
+        [11, 24],
+        [11, 23],
+        [11, 22],
+        [14, 21],
+        [14, 20],
+        [14, 19],
+    ]
+
+    colors = [
+        [255, 0, 0],
+        [255, 85, 0],
+        [255, 170, 0],
+        [255, 255, 0],
+        [170, 255, 0],
+        [85, 255, 0],
+        [0, 255, 0],
+        [0, 255, 85],
+        [0, 255, 170],
+        [0, 255, 255],
+        [0, 170, 255],
+        [0, 85, 255],
+        [0, 0, 255],
+        [85, 0, 255],
+        [170, 0, 255],
+        [255, 0, 255],
+        [255, 0, 170],
+        [255, 0, 85],
+        [255, 128, 0], 
+        [255, 0, 128],
+        [0, 255, 128],
+        [128, 255, 0],
+        [0, 128, 255],
+        [128, 0, 255],
+
+    ]
+    body_edge=24
+    for i in range(body_edge-1):
+        for n in range(len(subset)):
+            index = subset[n][np.array(limbSeq[i]) - 1]
+            if -1 in index:
+                continue
+            Y = candidate[index.astype(int), 0] * float(W)
+            X = candidate[index.astype(int), 1] * float(H)
+            mX = np.mean(X)
+            mY = np.mean(Y)
+            length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
+            angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
+            polygon = cv2.ellipse2Poly(
+                (int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1
+            )
+            cv2.fillConvexPoly(canvas, polygon, colors[i])
+
+    canvas = (canvas * 0.6).astype(np.uint8)
+
+    for i in range(body_edge):
+        for n in range(len(subset)):
+            index = int(subset[n][i])
+            if index == -1:
+                continue
+            x, y = candidate[index][0:2]
+            x = int(x * W)
+            y = int(y * H)
+            cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
+
+    return canvas
+
 
 def draw_handpose(canvas, all_hand_peaks):
     H, W, C = canvas.shape

@@ -19,15 +19,19 @@ from . import util
 from .wholebody import Wholebody
 
 
-def draw_pose(pose, H, W):
+def draw_pose(pose, H, W, image=None):
     bodies = pose["bodies"]
     faces = pose["faces"]
     hands = pose["hands"]
     candidate = bodies["candidate"]
     subset = bodies["subset"]
-    canvas = np.zeros(shape=(H, W, 3), dtype=np.uint8)
+    if image is None:
+        canvas = np.zeros(shape=(H, W, 3), dtype=np.uint8)
+    else:
+        canvas = np.array(image[...,::-1])
 
-    canvas = util.draw_bodypose(canvas, candidate, subset)
+    #canvas = util.draw_bodypose(canvas, candidate, subset)
+    canvas = util.draw_bodypose_with_foot(canvas, candidate, subset)
 
     canvas = util.draw_handpose(canvas, hands)
 
@@ -35,6 +39,8 @@ def draw_pose(pose, H, W):
 
     return canvas
 
+#边界为18时不包含脚，24包含脚
+body_edge=24
 
 class DWposeDetector:
     def __init__(self):
@@ -65,7 +71,7 @@ class DWposeDetector:
         detect_resolution=512,
         image_resolution=512,
         output_type="pil",
-        is_resize=True,
+        is_resize=False,
         **kwargs,
     ):
         input_image = cv2.cvtColor(
@@ -81,18 +87,18 @@ class DWposeDetector:
             nums, keys, locs = candidate.shape
             candidate[..., 0] /= float(W)
             candidate[..., 1] /= float(H)
-            score = subset[:, :18]
+            score = subset[:, :body_edge]
             max_ind = np.mean(score, axis=-1).argmax(axis=0)
             score = score[[max_ind]]
-            body = candidate[:, :18].copy()
+            body = candidate[:, :body_edge].copy()
             body = body[[max_ind]]
             nums = 1
-            body = body.reshape(nums * 18, locs)
+            body = body.reshape(nums * body_edge, locs)
             body_score = copy.deepcopy(score)
             for i in range(len(score)):
                 for j in range(len(score[i])):
                     if score[i][j] > 0.3:
-                        score[i][j] = int(18 * i + j)
+                        score[i][j] = int(body_edge * i + j)
                     else:
                         score[i][j] = -1
 
@@ -102,6 +108,12 @@ class DWposeDetector:
             foot = candidate[:, 18:24]
 
             faces = candidate[[max_ind], 24:92]
+
+            ####对手做一定约束
+            if sum([1 for x in subset[max_ind,92:113] if x < 0.4]) > 12:
+                candidate[0, 92:113] = [[-1,-1]]*21
+            if sum([1 for x in subset[max_ind,113:] if x < 0.4]) > 12:
+                candidate[0, 113:] = [[-1,-1]]*21
 
             hands = candidate[[max_ind], 92:113]
             hands = np.vstack([hands, candidate[[max_ind], 113:]])
@@ -125,4 +137,4 @@ class DWposeDetector:
             if output_type == "pil":
                 detected_map = Image.fromarray(detected_map)
 
-            return detected_map, body_score
+            return detected_map, pose, body_score

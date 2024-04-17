@@ -1,54 +1,54 @@
 ## data
-- 训练视频数据处理，进行中心crop和提取dwpose，详见tools/prepare_dataset，数据形式在output_path下会生成train和train_dwpose文件夹，当提取dwpose后会生成video_meta.json
-    ```bash
-    # --do_crop 对原视频开启中心crop，--do_dwpose 提取对应的dwpose，并生成video_meta.json用于训练索引
-    python -m tools.prepare_dataset --input_path /home/date1/hjq/DataSets/video_dataset/Self_dataset/full_body --output_path /home/date1/hjq/DataSets/video_dataset/Self_dataset --dst_w 512 --dst_h 768 --do_crop --do_dwpose
-    ```
-- 推理时模板视频前处理，详见tools/video_dwpose_align_image.py</br>
-    思路：先分别提取视频中关键帧和输入图的人物dwpose，通过两者身体线段的长度比来作为视频每帧的缩放比，通过输入图中人物dwpose中身体中心点和脚踝点到边界的长度作为视频每帧缩放后的crop偏移；再逐帧进行resize和crop后，进行dwpose提取，并将用户faces点位及body头部几个点位做仿射变换对齐到模板点位，并移动替换视频帧dwpose的相关点位，从而保证人脸区域不畸变。
-    ```bash
-    python -m tools.video_dwpose_align_image 
-    ```
+- 训练视频数据处理，通过人脸rect来获取crop框进行crop
+  ```bash
+  ## 详见脚本实现，有两个接口：1.通过json对video和dwpose进行crop,2.对raw_video进行crop并提取dwpose
+  python -m self_tools.prepare_dataset_crop [option]
+  ```
   
 ## Training
 源码中的问题:1.dtype未对应；2.ReferenceAttentionControl中的do_classifier_free_guidance被重置
 - 配置accelerator启动deepspeed,在对应目录下会生成default_config.yaml
-```bash
-accelerate config
+  ```bash
+  accelerate config
 
-#deepspeed按如下参数设置，注offload_optimizer_device和offload_param_device要设为none，选cpu可能会报错
-deepspeed_config:
-  gradient_accumulation_steps: 1
-  gradient_clipping: 1.0
-  offload_optimizer_device: none
-  offload_param_device: none
-  zero3_init_flag: false
-  zero_stage: 2
-```
+  #deepspeed按如下参数设置，注offload_optimizer_device和offload_param_device要设为none，选cpu可能会报错
+  deepspeed_config:
+    gradient_accumulation_steps: 1
+    gradient_clipping: 1.0
+    offload_optimizer_device: none
+    offload_param_device: none
+    zero3_init_flag: false
+    zero_stage: 2
+  ```
 
 - training stage1
-```bash
-accelerate launch --config_file /path/default_config.yaml train_stage_1.py
-```
+  ```bash
+  accelerate launch --config_file /path/default_config.yaml train_stage_1.py
+  ```
 
 - training stage2
-```bash
-accelerate launch --config_file /path/default_config.yaml train_stage_2.py
-```
+  ```bash
+  accelerate launch --config_file /path/default_config.yaml train_stage_2.py
+  ```
 
-- test stage2
-调整./configs/prompts/animation_ts.yaml中的模型路径，执行下面指令
-```bash
-python -m scripts.pose2vid --config ./configs/prompts/animation_ts.yaml -W 512 -H 784 -L 141
-```
-
+## 测试
+- 调整./self_tools/animation.yaml中的模型路径，执行下面指令
+  ```bash
+  ##修改脚本中的测试数据路径及crop参数
+  python -m self_tools.test_run -W 512 -H 768 -L 200
+  ```
 
 ## 一些有效优化简记
 
 ### 模板视频dwpose对齐到用户输入图
+#### 方法1
 - 以身高比作为缩放比例
 - 以用户喉部点位作为左右crop的中心，以用户最低脚部点位作为高低偏移量
 - 将用户faces点位及body头部几个点位做仿射变换对齐到模板点位，并移动替换视频帧dwpose的相关点位
+#### 方法2
+- 将body的关键点分为上半身和下半身分别与用户图进行仿射变换对齐
+- 对人脸及人头区域关键点进行相应比例偏移
 
 ### 训练trick
-- stage2保持与stage1相同尺寸，能更好抑制生成视频的抖动，整体更稳定
+- stage2保持与stage1相同尺寸，能更好抑制生成视频的抖动，整体更稳定;
+- 加上脚部关键点，能更好控制脚的生成，保证着地感;【注：加入脚部关键点后，模板视频需要确保脚部完整可见】

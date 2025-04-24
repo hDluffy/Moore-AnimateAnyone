@@ -99,6 +99,7 @@ def process_align_video(pose_estimation, video_list, dst_img):
         frame = video_list[idx]
         frame_resize=frame.resize((int(reize_w),int(reize_h)))
         frame_crop=frame_resize.crop((int(left),int(upper),int(right),int(lower)))
+        frame_crop=frame_crop.resize(dst_size)
         # if idx==0:
         #     frame_resize.save("./frame_resize_ts.jpg")
         #     frame_crop.save("./frame_crop_ts.jpg")
